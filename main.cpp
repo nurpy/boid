@@ -33,6 +33,9 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <iostream>
+#include <fstream>
+
  const int screenWidth = SCREENWIDTH;
  const int screenHeight = SCREENHEIGHT;
 //------------------------------------------------------------------------------------
@@ -50,11 +53,17 @@ int main(void)
 
     std::srand((unsigned)time(0)); 
     std::vector<std::unique_ptr<Bird>> birds;
-    for(int i = 0 ; i < 10 ; i++ )
+    for(int i = 0 ; i < 50 ; i++ )
     {
-      birds.push_back(std::make_unique<Bird>(Bird({rand()%SCREENWIDTH,rand()%SCREENHEIGHT},{rand()%3,rand()%3},{rand()%2,rand()%10},rand()%2)));
+      Vector2 Pos = {(float) (rand()%SCREENWIDTH), (float) (rand()%SCREENHEIGHT)};
+      Vector2 Vel = {(float) (rand()%6 + -3 ),(float) (rand()%6 + -3)};
+      Vector2 Acceleration = {(float) (rand()%10 + -5), (float) (rand()%10 + -5)};
+      float Orientation = (float) (rand()%2);
+      Bird temp(Pos,Vel,Acceleration,Orientation);
+      birds.push_back(std::make_unique<Bird>(temp));
 
     }
+	
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -72,6 +81,7 @@ int main(void)
             {
               i->guide(birds);
               i->update();
+ //             i->target({0,1}, -1.0);
               i->draw();
             }
 

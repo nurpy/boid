@@ -79,6 +79,9 @@
 #ifndef RAYLIB_H
 #define RAYLIB_H
 
+#include <iostream>
+#include <assert.h>
+
 #include <cmath>
 #include <stdarg.h>     // Required for: va_list - Only used by TraceLogCallback
 
@@ -211,10 +214,16 @@ typedef struct Vector2 {
     float x;                // Vector x component
     float y;                // Vector y component
     Vector2 operator*(const float& other){
-      return {x*other,y*other};
+		 float xval = x*other;
+		 float yval = y*other;
+      return {xval,yval};
     }
     Vector2 operator/(const float& other){
-      return {x/other,y/other};
+		float xval = x/other;
+		float yval = y/other;
+		 //assert(xval == xval);
+		 //assert(yval == yval);
+      return {xval,yval};
     }
     Vector2 operator+(const Vector2& other){
       return {x+other.x,y+other.y};
@@ -226,20 +235,27 @@ typedef struct Vector2 {
       return {x-other.x,y-other.y};
     }
     bool operator>(const Vector2& other){
-      return std::sqrt(x * x + y * y) > std::sqrt(other.x * other.x + other.y * other.y);
+      return this->mag() > other.mag();
     }
+    bool operator<(const Vector2& other){
+      return this->mag() < other.mag();
+    }////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     bool operator>(const float& other){
-      return std::sqrt(x * x + y * y) > other;
+      return this->mag() > other;
     }
     bool operator<(const float& other){
-      return std::sqrt(x * x + y * y) < other;
+      return this->mag() < other;
     }
     Vector2 normalize(){
-     float mag = std::sqrt(x * x + y * y);
+     float mag = this->mag();
+	  Vector2 norm = *this/mag;
+	  std::cout << x << " " << y << std::endl;
+	  assert (norm.x == norm.x);
     return *this/mag;
     }
-    float mag(){
+    float mag() const{
      float mag = std::sqrt(x * x + y * y);
+	  assert(mag == mag);
     return mag;
     }
 } Vector2;

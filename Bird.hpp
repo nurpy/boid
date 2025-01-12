@@ -27,6 +27,7 @@ class Bird : public Entity{
 	 void overlappingScreen();
     void update();
 	 void guide(std::vector<std::unique_ptr<Bird>>& birds);
+  void target(Vector2 targetDirection, float weight);
     
 
 };

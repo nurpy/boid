@@ -22,7 +22,7 @@ void Bird::draw(){
   this->overlappingScreen();  
   
   DrawTriangleLines(topVertex, bottomLeftVertex, bottomRightVertex, RED);
-//  DrawCircleLines(this->getPosition().x,this->getPosition().y,BIRDCLOSE,RED);
+ // DrawCircleLines(this->getPosition().x,this->getPosition().y,BIRDCLOSE,RED);
  // DrawCircleLines(this->getPosition().x,this->getPosition().y,BIRDFAR,RED);
 
 }
@@ -79,19 +79,29 @@ void Bird::overlappingScreen(){
 
 void Bird::update(){
   
-	
+	if(this->getVelocity().x == 0.0 || this->getVelocity().x == -0.0){
+		this->setVelocity({0.0000001,this->getVelocity().y});
+	}
+	float sign =   this->getVelocity().y*this->getVelocity().x < 0.0  ? -1.0 : 1.0 ;
+	float slope=0.0;
   //Control Orientation of birds
-  float slope = this->getVelocity().y / this->getVelocity().x;
+  if(this->getVelocity().x != 0.0){
+   slope = this->getVelocity().y / this->getVelocity().x;
+  }
+  else{
+	slope*=sign;
+  }
+  
   Orientation =std::atan( slope )-3.14159/2;
   Orientation+= this->getVelocity().x < 0.0 ? 3.14159 : 0;
 
   Matrix2 rotation_matrix = {std::cos(Orientation),-std::sin(Orientation),std::sin(Orientation),std::cos(Orientation)};
 
   //limit params
-  if(this->getAcceleration() > 1){this->setAcceleration(this->getAcceleration().normalize()*1);}
+  //if(this->getAcceleration() > 1){this->setAcceleration(this->getAcceleration().normalize()*1);}
   if(this->getVelocity() > 10){this->setVelocity(this->getVelocity().normalize()*10);} //max speed of bird is 10
   if(this->getVelocity() > 5){this->setVelocity(this->getVelocity()*DRAG);} // slow down fast bird
-  if(this->getVelocity() < 1){this->setAcceleration(this->getVelocity().normalize()*2);} // speed up slow bird
+  if(this->getVelocity() < 2){this->setAcceleration(this->getVelocity().normalize()*2);} // speed up slow bird
 
 
 
@@ -127,36 +137,66 @@ void Bird::update(){
 }
 
 
+//target a direction
+void Bird::target(Vector2 targetDirection, float weight){
+  targetDirection.normalize();
+  targetDirection = targetDirection*MAXSPEED;
+  targetDirection = targetDirection - this->getVelocity();
+  targetDirection = targetDirection * weight;
+
+  if(targetDirection.mag() > MAXFORCE){targetDirection = targetDirection.normalize()*MAXFORCE;}
+
+  //targetDirection = targetDirection.normalize()*MAXFORCE; //limit applied for to MAXFORCE
+
+  this->setAcceleration(targetDirection + this->getAcceleration());
+
+}
 
 
 void Bird::guide(std::vector<std::unique_ptr<Bird>>& birds){
 
-  float numOfBirdsClose=0;
-  float numOfBirdsFar=0;
-  Vector2 accelerationChangeRepulsion{0.0,0.0};
-  Vector2 accelerationChangeCoheshion{0.0,0.0};
+  int numOfBirdsClose=0;
+  int numOfBirdsFar=0;
+  Vector2 RepulsionDistanceAvg = {0.0,0.0};
+  Vector2 AlignmentVelocityAvg = {0.0,0.0};
+  Vector2 CohesionPositionAvg = {0.0 , 0.0};
   for(auto& bird : birds)
   {
-    //check if bird is too close (in close region)
-    Vector2 dist = bird->getPosition() - this->getPosition();
+    Vector2 dist = this->getPosition() - bird->getPosition();
+    // repulsion force
     if(dist <  BIRDCLOSE && dist > 0)
     {
-      float mag  = dist.mag();
-      Vector2 dir = dist.normalize();
-      bird->setAcceleration(dir* (REPULSION/mag) + bird->getAcceleration() );
-      this->setAcceleration(dir* (-REPULSION/mag) + this->getAcceleration() );
+    	this->target(dist,REPULSION/dist.mag());
+      RepulsionDistanceAvg=dist+RepulsionDistanceAvg;
       numOfBirdsClose++;
-    //  accelerationChangeRepulsion+=dir* (-REPULSION/mag);
     }
-    
+
+    //coheshion force && alignment force
     if( dist < BIRDFAR && dist > 0)
     {
-      Vector2 intendedDir = dist + bird->getVelocity();
-      this->setAcceleration( (intendedDir*10)/COHESION /*std::exp(mag)/COHESION)*/ + this->getAcceleration() );
-  //    accelerationChangeCoheshion+=(dir * -mag)/COHESION;
+      AlignmentVelocityAvg = AlignmentVelocityAvg + bird->getVelocity();
+      CohesionPositionAvg = CohesionPositionAvg-dist;// + bird->getPosition();
       numOfBirdsFar++;
     }
   }
+  
+  if(numOfBirdsClose > 0)
+  {
+    //this->target(RepulsionDistanceAvg,REPULSION/(RepulsionDistanceAvg/numOfBirdsClose).mag());
+  }
+  if(numOfBirdsFar > 0)
+  {
+//    this->target(AlignmentVelocityAvg,DIRECTED/(float)numOfBirdsFar);
+    this->target(AlignmentVelocityAvg,.001);
+    //this->target({-1,-1},1);
+    
+    this->target(CohesionPositionAvg, .0001);
+  //  this->target(CohesionPositionAvg, COHESION/(float)numOfBirdsFar);
+
+    
+
+  }
+  
 //  this->setAcceleration(accelerationChangeRepulsion/numOfBirdsClose + accelerationChangeCoheshion/numOfBirdsFar );
 
 

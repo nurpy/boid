@@ -2,15 +2,20 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define SCREENWIDTH 800
-#define SCREENHEIGHT 800
+#define SCREENWIDTH 1800
+#define SCREENHEIGHT 1000
 
 #define BIRDCLOSE 75
-#define BIRDFAR 200
+#define BIRDFAR 250
 
-#define REPULSION 30
-#define COHESION 200
-#define DIRECTED
+#define REPULSION 100000
+#define COHESION .00001
+#define DIRECTED .00001
+
+
+#define MAXSPEED 10
+#define MAXACCELERATION
+#define MAXFORCE 1
 
 #define DRAG .9
 
