@@ -249,7 +249,6 @@ typedef struct Vector2 {
     Vector2 normalize(){
      float mag = this->mag();
 	  Vector2 norm = *this/mag;
-	  std::cout << x << " " << y << std::endl;
 	  assert (norm.x == norm.x);
     return *this/mag;
     }

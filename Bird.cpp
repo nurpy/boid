@@ -22,8 +22,8 @@ void Bird::draw(){
   this->overlappingScreen();  
   
   DrawTriangleLines(topVertex, bottomLeftVertex, bottomRightVertex, RED);
- // DrawCircleLines(this->getPosition().x,this->getPosition().y,BIRDCLOSE,RED);
- // DrawCircleLines(this->getPosition().x,this->getPosition().y,BIRDFAR,RED);
+  //DrawCircleLines(this->getPosition().x,this->getPosition().y,BIRDCLOSE,RED);
+  //DrawCircleLines(this->getPosition().x,this->getPosition().y,BIRDFAR,RED);
 
 }
 
@@ -136,7 +136,20 @@ void Bird::update(){
   return;
 }
 
+//target a repelling direction
+void Bird::targetRepel(Vector2 targetDirection, float weight){
+  targetDirection.normalize();
+  targetDirection = targetDirection*MAXSPEED;
+  targetDirection = targetDirection - this->getVelocity();
+  targetDirection = targetDirection * weight;
 
+  if(targetDirection.mag() > MAXREPULSIONFORCE){targetDirection = targetDirection.normalize()*MAXREPULSIONFORCE;}
+
+  //targetDirection = targetDirection.normalize()*MAXFORCE; //limit applied for to MAXFORCE
+
+  this->setAcceleration(targetDirection + this->getAcceleration());
+
+}
 //target a direction
 void Bird::target(Vector2 targetDirection, float weight){
   targetDirection.normalize();
@@ -166,7 +179,7 @@ void Bird::guide(std::vector<std::unique_ptr<Bird>>& birds){
     // repulsion force
     if(dist <  BIRDCLOSE && dist > 0)
     {
-    	this->target(dist,REPULSION/dist.mag());
+    	this->targetRepel(dist,REPULSION);///dist.mag());
       RepulsionDistanceAvg=dist+RepulsionDistanceAvg;
       numOfBirdsClose++;
     }

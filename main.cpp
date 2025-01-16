@@ -53,7 +53,7 @@ int main(void)
 
     std::srand((unsigned)time(0)); 
     std::vector<std::unique_ptr<Bird>> birds;
-    for(int i = 0 ; i < 50 ; i++ )
+    for(int i = 0 ; i < 30 ; i++ )
     {
       Vector2 Pos = {(float) (rand()%SCREENWIDTH), (float) (rand()%SCREENHEIGHT)};
       Vector2 Vel = {(float) (rand()%6 + -3 ),(float) (rand()%6 + -3)};
